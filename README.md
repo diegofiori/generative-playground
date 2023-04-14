@@ -1,1 +1,1 @@
-# generative-playground
+# Generative-playground
