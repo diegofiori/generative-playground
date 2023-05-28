@@ -41,7 +41,8 @@ class CodeReviewer:
                 "Note that a code snippet is usually just a small piece of the full code. "
                 "You can also provide multiple comments for the same code snippet.\n\n"
                 "When writing comments you must follow few simple rules:\n"
-                "1. if you do not have any comment on the code just write 'LGTM!'.\n"
+                "1. if you do not have any comment on the code just write 'LGTM!'. "
+                "You should write it just when you have NO comment at all.\n"
                 "2. you MUST write the code in the snippet section in the "
                 "exact same way it is written in the original code. Consider that "
                 "the snippet you provide will be used for retrieve its exact "
@@ -98,7 +99,7 @@ class CodeReviewer:
                 continue
             code_snippet = code_snippet.group(1).strip()
             if file_name == original_file_name:
-                index = _remove_strings(cleaned_code.split(code_snippet)[0]).count("\n") + 1
+                index = _remove_strings(cleaned_code.split(code_snippet)[0]).strip().count("\n") + 1
             else:
                 index = 1  # when not found, we assume that the comment is for the first line
                 for previous_code in old_messages:
@@ -109,7 +110,7 @@ class CodeReviewer:
                         continue
                     cleaned_previous_code = cleaned_previous_code.group(1).strip()
                     if previous_file_name == file_name:
-                        index = _remove_strings(cleaned_previous_code.split(code_snippet)[0]).count("\n") + 1
+                        index = _remove_strings(cleaned_previous_code.split(code_snippet)[0]).strip().count("\n") + 1
                         break
             processed_comments.append((file_name, index, cleaned_comment))
         return processed_comments
@@ -139,6 +140,8 @@ class CodeReviewer:
             self._messages[-1], 
             filter(lambda x: x["role"] == "user", self._messages)
         )
+        if self._verbose:
+            print(f"Comments: {comments}")
         model_message = {
             "role": "assistant",
             "content": model_response,
