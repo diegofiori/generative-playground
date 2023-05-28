@@ -1,4 +1,4 @@
-from github import Github, Commit
+from github import Github
 
 from code_reviewer.reviewer import CodeReviewer
 
