@@ -4,7 +4,7 @@ import time
 from typing import List
 
 import openai
-from openai.types.beta import ThreadMessage
+from openai.types.beta.threads import ThreadMessage
 
 from agent.excecutor import FunctionExecutor
 from agent.prompts import BASE_INSTRUCTION, STATUS_UPDATE
@@ -50,7 +50,7 @@ class FrontendAgentRunner:
         )
         run = client.beta.threads.runs.create(
             thread_id=self.thread.id,
-            assistant_id=self.assistant.id,
+            assistant_id=self.agent.id,
             instructions=STATUS_UPDATE.template.format(
                 status=self.executor.execute("getStatus")
             ),
