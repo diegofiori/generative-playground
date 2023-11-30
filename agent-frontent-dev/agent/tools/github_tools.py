@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import os
 from typing import Any, Dict, List
 
-from github import Github
+from github import Github, GithubException
 
 
 @dataclass
@@ -13,7 +13,6 @@ class GitHubInterface:
     github_repository: str
     github_branch: str | None = None
     github_base_branch: str | None = None
-    commit_history: List[str] | None = None
     
     def get_status(self) -> str:
         """
@@ -23,13 +22,21 @@ class GitHubInterface:
         Returns:
             str: The status of the GitHub interface
         """
+        try:
+            commits = list(self.github_repo_instance.get_commits())
+        except Exception as e:
+            print(e)
+            commits = []
+        
+        if len(commits) > 10:
+            commits = commits[-10:]
         
         return {
             "github_repository": self.github_repository,
             "github_branch": self.github_branch,
             "github_base_branch": self.github_base_branch,
             "files": self.get_files(),
-            "commit_history": self.commit_history,
+            "commit_history": commits,
         }
         
     def get_files(self, path=""):
@@ -39,7 +46,11 @@ class GitHubInterface:
             List[str]: The files in the repository
         """
         files = []
-        contents = self.github_repo_instance.get_contents(path)
+        try:
+            contents = self.github_repo_instance.get_contents(path)
+        except Exception as e:
+            print(e)
+            contents = []
 
         for content in contents:
             if content.type == "dir":
@@ -69,7 +80,6 @@ class GitHubInterface:
         # default value for base branch is main
         if self.github_base_branch is None:
             self.github_base_branch = "main"
-        self.commit_history = self.commit_history or []
         
     def create_branch(self, branch_name: str) -> str:
         """
@@ -126,6 +136,14 @@ class GitHubInterface:
                 return f"Successfully created PR number {pr.number}"
             except Exception as e:
                 return "Unable to make pull request due to error:\n" + str(e)
+    
+    def file_exists(self, file_path):
+        try:
+            self.github_repo_instance.get_contents(file_path)
+            return True
+        except Exception as e:
+            print(type(e))
+            return False
 
     def create_file(self, file_path: str, file_contents: str) -> str:
         """
@@ -137,8 +155,7 @@ class GitHubInterface:
             str: A success or failure message
         """
         try:
-            exists = self.github_repo_instance.get_contents(file_path)
-            if exists is None:
+            if not self.file_exists(file_path):
                 self.github_repo_instance.create_file(
                     path=file_path,
                     message="Create " + file_path,
@@ -149,6 +166,7 @@ class GitHubInterface:
             else:
                 return f"File already exists at {file_path}. Use update_file instead"
         except Exception as e:
+            print(e)
             return "Unable to make file due to error:\n" + str(e)
 
     def read_file(self, file_path: str) -> str:
@@ -159,7 +177,11 @@ class GitHubInterface:
         Returns:
             str: The file decoded as a string
         """
-        file = self.github_repo_instance.get_contents(file_path)
+        try:
+            file = self.github_repo_instance.get_contents(file_path)
+        except Exception as e:
+            print(e)
+            return "Unable to read file due to error:\n" + str(e)
         return file.decoded_content.decode("utf-8")
 
     def update_file(self, file_path: str, file_contents: str) -> str:
@@ -188,7 +210,9 @@ class GitHubInterface:
             new_file_contents = (
                 file_contents.split("NEW <<<<")[1].split(">>>> NEW")[0].strip()
             )
-
+            if not self.file_exists(file_path):
+                return f"File does not exist at {file_path}. Use create_file instead"
+            
             file_content = self.read_file(file_path)
             updated_file_content = file_content.replace(
                 old_file_contents, new_file_contents
@@ -210,6 +234,7 @@ class GitHubInterface:
             )
             return "Updated file " + file_path
         except Exception as e:
+            print(e)
             return "Unable to update file due to error:\n" + str(e)
 
     def delete_file(self, file_path: str) -> str:
@@ -230,6 +255,7 @@ class GitHubInterface:
             )
             return "Deleted file " + file_path
         except Exception as e:
+            print(e)
             return "Unable to delete file due to error:\n" + str(e)
     
     def run(self, function_name: str, **parameters: Dict[str, Any]) -> Any:
