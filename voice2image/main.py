@@ -27,7 +27,7 @@ with gr.Blocks() as demo:
         "generate images based on the audio you recorded.\n\nEnjoy!🔥"
     )
     audio_window = gr.Audio(
-        source="microphone", type="filepath", label="Input Audio"
+        sources="microphone", type="filepath", label="Input Audio"
     )
     convert_button = gr.Button("Generate Images")
     with gr.Row():
