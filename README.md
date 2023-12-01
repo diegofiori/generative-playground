@@ -36,17 +36,22 @@ pip install -r requirements.txt
 
 ## Usage
 
-1. Run voice2image 
+1. Run the main interactive console interface
+```
+python src/main.py 
+```
+
+2. Run voice2image 
 ```
 python src/main.py --v
 ```
 
-2. Run real-time-translate
+3. Run real-time-translate
 ```
 python src/main.py --t
 ```
 
-3. View the help menu for more options
+4. View the help menu for more options
 ```
 python src/main.py --h
 ```
