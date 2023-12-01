@@ -1,7 +1,7 @@
 import os
 import gradio as gr
 
-from voice2image.models import (
+from .voice2image.models import (
     WhisperModel, PromptGenerationModel, ImageGenerationModel
 )
 
@@ -18,24 +18,24 @@ def convert_audio(audio_file):
     images = image_generation_model(prompt)
     return images
 
+def voice_to_image():
+    with gr.Blocks() as demo:
+        # Add a title
+        gr.Markdown(
+            "# 🚀Voice2Image🚀\n\nThe Voice2Image app allows you to convert audio "
+            "to images. You can use the microphone to record your voice and then "
+            "generate images based on the audio you recorded.\n\nEnjoy!🔥"
+        )
+        audio_window = gr.Audio(
+            sources="microphone", type="filepath", label="Input Audio"
+        )
+        convert_button = gr.Button("Generate Images")
+        with gr.Row():
+            image_1 = gr.Image()
+            image_2 = gr.Image()
+            image_3 = gr.Image()
+            image_4 = gr.Image()
 
-with gr.Blocks() as demo:
-    # Add a title
-    gr.Markdown(
-        "# 🚀Voice2Image🚀\n\nThe Voice2Image app allows you to convert audio "
-        "to images. You can use the microphone to record your voice and then "
-        "generate images based on the audio you recorded.\n\nEnjoy!🔥"
-    )
-    audio_window = gr.Audio(
-        sources="microphone", type="filepath", label="Input Audio"
-    )
-    convert_button = gr.Button("Generate Images")
-    with gr.Row():
-        image_1 = gr.Image()
-        image_2 = gr.Image()
-        image_3 = gr.Image()
-        image_4 = gr.Image()
+        convert_button.click(convert_audio, inputs=[audio_window], outputs=[image_1, image_2, image_3, image_4])
 
-    convert_button.click(convert_audio, inputs=[audio_window], outputs=[image_1, image_2, image_3, image_4])
-
-demo.launch()
+    demo.launch()
