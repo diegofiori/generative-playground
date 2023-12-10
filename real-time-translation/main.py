@@ -28,9 +28,9 @@ with gr.Blocks() as demo:
     )
     with gr.Row():
         audio_window = gr.Audio(
-            source="microphone", type="filepath", label="Input Audio"
+            sources="microphone", type="filepath", label="Input Audio"
         )
-        language_dropdown = gr.inputs.Dropdown(
+        language_dropdown = gr.Dropdown(
             label="Language", choices=["english", "spanish", "french"]
         )
     convert_button = gr.Button("Translate")
