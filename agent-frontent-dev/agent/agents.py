@@ -13,8 +13,6 @@ from agent.excecutor import FunctionExecutor
 from agent.prompts import BASE_INSTRUCTION, STATUS_UPDATE
 from agent.tools.github_tools import GitHubInterface
 
-from dotenv import load_dotenv
-load_dotenv()
 
 client = openai.OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
