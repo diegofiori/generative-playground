@@ -1,25 +1,20 @@
+import gradio as gr
+from PIL import Image
 from agent.agents import FrontendAgentRunner
 
-
-def _main_loop(agent: FrontendAgentRunner):
-    input_text = input("Enter your request: ")
-    assistant_messages = agent.run(input_text)
-    for message in assistant_messages:
-        print(f"{message.role}: {message.content}")
-    
-    
-
+def _main_loop(input_text: str, image: Image.Image = None):
+    agent = FrontendAgentRunner()
+    assistant_messages = agent.run(input_text, image=image)
+    return "\n".join([f"{message.role}: {message.content}" for message in assistant_messages])
 
 def main():
-    agent = FrontendAgentRunner()
-    while True:
-        try:
-            _main_loop(agent)
-        except KeyboardInterrupt:
-            print("Interrupted by user. Exiting...")
-            break
-        except Exception as e:
-            print(f"An error occurred: {e}")
+    inputs = [
+        gr.Textbox(lines=2, placeholder="Enter your request here..."),
+        gr.Image(type="pil", label="Upload Image"),
+    ]
+    outputs = gr.Textbox()
+    interface = gr.Interface(fn=_main_loop, inputs=inputs, outputs=outputs)
+    interface.launch()
 
 if __name__ == "__main__":
     main()

@@ -99,6 +99,7 @@ class GitHubInterface:
                 ref=f"refs/heads/{branch_name}",
                 sha=self.github_repo_instance.get_branch(self.github_branch).commit.sha,
             )
+            self.github_branch = branch_name
             return f"Successfully created branch {branch_name}"
     
     def get_current_branch(self) -> str:
@@ -184,7 +185,7 @@ class GitHubInterface:
             return "Unable to read file due to error:\n" + str(e)
         return file.decoded_content.decode("utf-8")
 
-    def update_file(self, file_path: str, file_contents: str) -> str:
+    def update_file(self, file_path: str, file_contents: str, **kwargs) -> str:
         """
         Updates a file with new content.
         Parameters:
@@ -203,6 +204,8 @@ class GitHubInterface:
         Returns:
             A success or failure message
         """
+        if kwargs:
+            print(f"Warning: extra kwargs detected: {kwargs}")
         try:
             old_file_contents = (
                 file_contents.split("OLD <<<<")[1].split(">>>> OLD")[0].strip()

@@ -5,15 +5,19 @@ from typing import List
 
 import openai
 from openai.types.beta.threads import ThreadMessage
+from PIL import Image
 
+import agent.tools.github_tools as github_tools
+import agent.tools.web_reader as web_reader
 from agent.excecutor import FunctionExecutor
 from agent.prompts import BASE_INSTRUCTION, STATUS_UPDATE
-from agent.tools.github_tools import get_tools, GitHubInterface
+from agent.tools.github_tools import GitHubInterface
 
 client = openai.OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 def build_frontend_developer_agent():
-    tools = get_tools()
+    tools = github_tools.get_tools()
+    tools.extend(web_reader.get_tools())
     tools.append({"type": "code_interpreter"})
     assistant = client.beta.assistants.create(
         name="Serhii, the Frontend Developer",
@@ -39,10 +43,12 @@ class FrontendAgentRunner:
             os.environ["GITHUB_TOKEN"], 
             repository=os.environ["GITHUB_REPOSITORY"]
         )
-        self.executor = FunctionExecutor([github_interface])
+        web_reader_interface = web_reader.WebPageToolExecutor()
+        self.executor = FunctionExecutor([github_interface, web_reader_interface])
         self.thread = client.beta.threads.create()
     
-    def run(self, text: str) -> List[ThreadMessage]:
+    def run(self, text: str, image: Image = None) -> List[ThreadMessage]:
+        # TODO: add image support
         message = client.beta.threads.messages.create(
             thread_id=self.thread.id,
             role="user",
