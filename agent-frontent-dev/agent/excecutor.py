@@ -20,12 +20,18 @@ class ToolExecutor(Protocol):
 
 
 class FunctionExecutor:
-    def __init__(self, tool_executors: List[ToolExecutor]):
+    def __init__(self, tool_executors: List[ToolExecutor], verbose: bool = False):
         self.tool_executors = tool_executors
+        self.verbose = verbose
 
     def execute(self, function_name: str, **kwargs):
         for exec in self.tool_executors:
             if exec.support(function_name):
-                return exec.run(function_name, **kwargs)
+                if self.verbose:
+                    print(f"Trying to run {function_name}")
+                result = exec.run(function_name, **kwargs)
+                if self.verbose:
+                    print(f"Result: {result}")
+                return result
         
         return f"Unknown function {function_name} was called."

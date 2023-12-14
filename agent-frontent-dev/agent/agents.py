@@ -38,18 +38,23 @@ def get_frontend_developer_agent():
 
 
 class FrontendAgentRunner:
-    def __init__(self):
+    def __init__(self, verbose: bool = False):
         self.agent = get_frontend_developer_agent()
         github_interface = GitHubInterface.from_github_token(
             os.environ["GITHUB_TOKEN"], 
             repository=os.environ["GITHUB_REPOSITORY"]
         )
         web_reader_interface = web_reader.WebPageToolExecutor()
-        self.executor = FunctionExecutor([github_interface, web_reader_interface])
+        self.executor = FunctionExecutor([github_interface, web_reader_interface], verbose=verbose)
         self.thread = client.beta.threads.create()
+        self.verbose = verbose
     
     def run(self, text: str, image: Image = None) -> List[ThreadMessage]:
         # TODO: add image support
+        if self.verbose:
+            print(f"Running agent with input: {text}")
+            print(f"Thread id: {self.thread.id}")
+        
         message = client.beta.threads.messages.create(
             thread_id=self.thread.id,
             role="user",
@@ -64,6 +69,8 @@ class FrontendAgentRunner:
         )
         while run.status != "completed":
             if run.status == "requires_action":
+                if self.verbose:
+                    print("Run requires action")
                 tool_calls = run.required_action.submit_tool_outputs.tool_calls
                 tool_outputs = []
                 for tool_call in tool_calls:
@@ -82,6 +89,8 @@ class FrontendAgentRunner:
                     run_id=run.id,
                     tool_outputs=tool_outputs
                 )  
+                if self.verbose:
+                    print("Submitted tool outputs")
             elif run.status == "failed":
                 raise Exception(run.last_error.message) 
             else:
@@ -93,4 +102,6 @@ class FrontendAgentRunner:
         messages = client.beta.threads.messages.list(
             thread_id=self.thread.id
         )
+        if self.verbose:
+            print(f"Agent finished with output: {messages}")
         return list(messages)

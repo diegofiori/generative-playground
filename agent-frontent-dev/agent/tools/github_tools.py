@@ -236,6 +236,9 @@ class GitHubInterface:
                 sha=self.github_repo_instance.get_contents(file_path).sha,
             )
             return "Updated file " + file_path
+        except IndexError:
+            print(file_contents)
+            return "Unable to update file because the file contents were not formatted correctly."
         except Exception as e:
             print(e)
             return "Unable to update file due to error:\n" + str(e)
