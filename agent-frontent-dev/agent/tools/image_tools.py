@@ -16,7 +16,7 @@ def save_and_encode_image(image: Image.Image) -> str:
     with tempfile.TemporaryDirectory() as temp_dir:
         image_path = os.path.join(temp_dir, "temp_image.jpg")
         image.save(image_path)
-    return encode_image(image_path)
+        return encode_image(image_path)
 
 
 class OpenAIVisionModel:
