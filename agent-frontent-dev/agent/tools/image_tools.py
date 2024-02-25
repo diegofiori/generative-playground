@@ -22,7 +22,9 @@ def save_and_encode_image(image: Image.Image) -> str:
 class OpenAIVisionModel:
     def __init__(self):
         self.model = "gpt-4-vision-preview"
-        self.client = openai.Client()
+        self.client = openai.OpenAI(
+            api_key=os.environ.get("OPENAI_API_KEY")
+        )
     
     def analyse_image(self, message: str, image: Image.Image) -> str:
         """Analyse an image and return the result as a string."""
@@ -50,3 +52,10 @@ class OpenAIVisionModel:
         )
 
         return response.choices[0].message.content
+
+
+def analyse_image_tool(image: Image.Image):
+    message = "Describe the image in the deepest detail possible."
+    image_model = OpenAIVisionModel()
+    image_description = image_model.analyse_image(message, image)
+    return image_description

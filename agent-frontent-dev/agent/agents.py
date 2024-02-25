@@ -12,6 +12,7 @@ import agent.tools.web_reader as web_reader
 from agent.excecutor import FunctionExecutor
 from agent.prompts import BASE_INSTRUCTION, STATUS_UPDATE
 from agent.tools.github_tools import GitHubInterface
+from agent.tools.image_tools import analyse_image_tool
 
 
 client = openai.OpenAI(api_key=os.environ["OPENAI_API_KEY"])
@@ -55,11 +56,22 @@ class FrontendAgentRunner:
             print(f"Running agent with input: {text}")
             print(f"Thread id: {self.thread.id}")
         
-        message = client.beta.threads.messages.create(
+        _ = client.beta.threads.messages.create(
             thread_id=self.thread.id,
             role="user",
             content=text
         )
+        if image:
+            image_description = analyse_image_tool(image)
+            if self.verbose:
+                print("Image provided")
+                print(f"Image description: {image_description}")
+            text_message = f"Here is the description of the image provided by the user: {image_description}"
+            _ = client.beta.threads.messages.create(
+                thread_id=self.thread.id,
+                role="user",
+                content=text_message
+            )
         run = client.beta.threads.runs.create(
             thread_id=self.thread.id,
             assistant_id=self.agent.id,
